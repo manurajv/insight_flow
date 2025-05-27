@@ -1,58 +1,72 @@
 import 'package:flutter/material.dart';
-
-import '../../core/models/message_model.dart';
-import '../../core/widgets/charts/bar_chart.dart';
-import '../../core/widgets/charts/line_chart.dart';
-import '../../core/widgets/charts/pie_chart.dart';
+import '../../../core/models/message_model.dart';
+import '../../../core/services/ai_service.dart';
 
 class ChatController with ChangeNotifier {
+  final AIService _aiService = AIService();
   final List<Message> _messages = [];
+  List<Map<String, dynamic>> _conversationContext = [];
+  bool _isLoading = false;
 
   List<Message> get messages => _messages;
+  bool get isLoading => _isLoading;
 
-  void addMessage(Message message) {
-    _messages.add(message);
+  Future<void> sendMessage(String text) async {
+    // Add user message
+    _addUserMessage(text);
+    _setLoading(true);
+
+    try {
+      // Get AI response
+      final response = await _aiService.generateResponse(
+          text,
+          context: _conversationContext
+      );
+      final visualization = await _aiService.generateVisualization(text);
+
+      // Update context
+      _updateContext(userMessage: text, aiResponse: response);
+
+      // Add AI message
+      _addAiMessage(response, visualization);
+    } catch (e) {
+      _addAiMessage("Sorry, I encountered an error. Please try again.", null);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _addUserMessage(String text) {
+    _messages.add(Message(text: text, isUser: true));
+    notifyListeners();
+  }
+
+  void _addAiMessage(String text, Widget? chart) {
+    _messages.add(Message(text: text, isUser: false, chart: chart));
+    notifyListeners();
+  }
+
+  void _updateContext({required String userMessage, required String aiResponse}) {
+    _conversationContext.add({
+      'user': userMessage,
+      'ai': aiResponse,
+      'timestamp': DateTime.now().toString(),
+    });
+
+    // Keep only last 5 messages for context
+    if (_conversationContext.length > 5) {
+      _conversationContext.removeAt(0);
+    }
+  }
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
   }
 
   void clearMessages() {
     _messages.clear();
+    _conversationContext.clear();
     notifyListeners();
-  }
-
-  Future<void> sendMessage(String text) async {
-    // Add user message
-    addMessage(Message(text: text, isUser: true));
-
-    // Simulate AI response after delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Add AI response
-    addMessage(Message(
-      text: _getAIResponse(text),
-      isUser: false,
-      chart: _generateChartForQuery(text),
-    ));
-  }
-
-  String _getAIResponse(String query) {
-    if (query.toLowerCase().contains('sales')) {
-      return 'Here are the sales trends for the last quarter:';
-    } else if (query.toLowerCase().contains('revenue')) {
-      return 'Revenue breakdown by product category:';
-    } else {
-      return 'I analyzed your data and found these insights:';
-    }
-  }
-
-  Widget? _generateChartForQuery(String query) {
-    if (query.toLowerCase().contains('trend')) {
-      return const LineChartSample();
-    } else if (query.toLowerCase().contains('compare')) {
-      return const BarChartSample();
-    } else if (query.toLowerCase().contains('breakdown')) {
-      return const PieChartSample();
-    }
-    return null;
   }
 }

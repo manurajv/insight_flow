@@ -38,6 +38,9 @@ class ChatBubble extends StatelessWidget {
               isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 GlassContainer(
+                  color: isUser
+                      ? AppColors.primary.withOpacity(0.2)
+                      : AppColors.surface,
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Text(
@@ -59,6 +62,14 @@ class ChatBubble extends StatelessWidget {
               ],
             ),
           ),
+          if (isUser)
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              child: const CircleAvatar(
+                backgroundColor: AppColors.secondary,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+            ),
         ],
       ),
     );

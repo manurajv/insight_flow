@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/glassmorphism_effects.dart';
 import '../../../core/widgets/buttons/glass_button.dart';
-import '../../../core/widgets/chips/message_input.dart';
-import '../../../core/widgets/chips/suggestion_chips.dart';
 import '../chat_controller.dart';
 import '../components/chat_bubble.dart';
 import '../components/message_input.dart';
@@ -62,6 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               // Header
               GlassContainer(
+                //margin: const EdgeInsets.all(8),
                 borderRadius: 12,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -77,7 +77,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       const Spacer(),
                       GlassButton(
                         onPressed: () =>
-                            context.read<ChatController>().clearMessages(),
+                            Provider.of<ChatController>(context, listen: false)
+                                .clearMessages(),
                         child: Text('New Chat', style: GlassTextStyle.body),
                       ),
                     ],
@@ -89,18 +90,33 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Consumer<ChatController>(
                   builder: (context, controller, _) {
                     _scrollToBottom();
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(8),
-                      itemCount: controller.messages.length,
-                      itemBuilder: (context, index) {
-                        final message = controller.messages[index];
-                        return ChatBubble(
-                          message: message.text,
-                          isUser: message.isUser,
-                          chart: message.chart,
-                        );
-                      },
+                    return Stack(
+                      children: [
+                        ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(8),
+                          itemCount: controller.messages.length,
+                          itemBuilder: (context, index) {
+                            final message = controller.messages[index];
+                            return ChatBubble(
+                              message: message.text,
+                              isUser: message.isUser,
+                              chart: message.chart,
+                            );
+                          },
+                        ),
+                        if (controller.isLoading)
+                          const Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: SpinKitThreeBounce(
+                                color: AppColors.primary,
+                                size: 20.0,
+                              ),
+                            ),
+                          ),
+                      ],
                     );
                   },
                 ),

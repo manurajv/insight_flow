@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "352305188284",
+    "project_id": "insight-flow-9d43c",
+    "storage_bucket": "insight-flow-9d43c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352305188284:android:6fa2e96beaf81e0e59efb9",
+        "android_client_info": {
+          "package_name": "com.manuraj.insight_flow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADUdpo8q-jtGVj-HRC34C25sIhOiOeIto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

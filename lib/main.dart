@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'app.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'features/chat/chat_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ChatController()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -51,5 +62,26 @@ class MyApp extends StatelessWidget {
       ),
       home: const App(),
     );
+  }
+}
+
+class FirestoreService {
+  Future<void> deleteChat(String chatId) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception('User not authenticated');
+    final chatRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('chats')
+        .doc(chatId);
+
+    // Delete all messages in the chat
+    final messages = await chatRef.collection('messages').get();
+    for (var doc in messages.docs) {
+      await doc.reference.delete();
+    }
+
+    // Delete the chat document
+    await chatRef.delete();
   }
 }

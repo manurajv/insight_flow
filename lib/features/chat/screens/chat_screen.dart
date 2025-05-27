@@ -8,6 +8,7 @@ import '../chat_controller.dart';
 import '../components/chat_bubble.dart';
 import '../components/message_input.dart';
 import '../components/suggestion_chips.dart';
+import 'chat_history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -18,6 +19,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final _scrollController = ScrollController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
@@ -40,7 +42,70 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
+      drawer: Drawer(
+        backgroundColor: AppColors.surface,
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 30, color: AppColors.primary),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'AI Dashboard Assistant',
+                    style: GlassTextStyle.headline.copyWith(fontSize: 20),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Your AI-powered analytics companion',
+                    style: GlassTextStyle.body.copyWith(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.chat, color: Colors.white),
+              title: Text('New Chat', style: GlassTextStyle.body),
+              onTap: () {
+                context.read<ChatController>().startNewChat();
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history, color: Colors.white),
+              title: Text('Chat History', style: GlassTextStyle.body),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChatHistoryScreen(),
+                  ),
+                );
+              },
+            ),
+            const Spacer(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.white),
+              title: Text('Sign Out', style: GlassTextStyle.body),
+              onTap: () {
+                // TODO: Implement sign out
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: [
           // Background gradient
@@ -61,13 +126,19 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               // Header
               GlassContainer(
-                //margin: const EdgeInsets.all(8),
                 borderRadius: 12,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 12),
+                    horizontal: 16.0,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.menu, color: Colors.white),
+                        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                      ),
+                      const SizedBox(width: 8),
                       const Icon(Icons.auto_awesome, color: Colors.white),
                       const SizedBox(width: 8),
                       Text(
@@ -76,9 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       const Spacer(),
                       GlassButton(
-                        onPressed: () =>
-                            Provider.of<ChatController>(context, listen: false)
-                                .clearMessages(),
+                        onPressed: () => context.read<ChatController>().startNewChat(),
                         child: Text('New Chat', style: GlassTextStyle.body),
                       ),
                     ],
